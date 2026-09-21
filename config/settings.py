@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,20 @@ SECRET_KEY = 'django-insecure-l#i2ht*bu$=l103aei9@f(i+aym8)))8ols^)m()63&xvx45&t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# The fleet serves the app through nginx on a host we do not know at build
+# time, so ALLOWED_HOSTS has to come from the environment.
+ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",") if h]
+
+# --- fleet BASE_PATH contract -------------------------------------------
+# nginx forwards the whole /direct/<agent>:<port> prefix UNCHANGED, so the app
+# must answer on it. config/wsgi.py moves the prefix from PATH_INFO into
+# SCRIPT_NAME; FORCE_SCRIPT_NAME makes reverse() emit it. Empty => host root.
+_raw = (os.environ.get("BASE_PATH") or "").strip().strip("/")
+BASE_PATH = f"/{_raw}" if _raw else ""
+FORCE_SCRIPT_NAME = BASE_PATH or None
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
@@ -114,7 +128,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = f"{BASE_PATH}/static/"
 
 
 # Email
