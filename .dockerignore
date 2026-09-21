@@ -1,0 +1,16 @@
+.git
+.github
+.fleet
+.venv
+__pycache__
+.pytest_cache
+dist
+build
+coverage
+.env
+.env.*
+!.env.example
+*.log
+artifacts
+checkpoints
+data/MNIST
