@@ -46,3 +46,21 @@ it. An empty or unset value means standalone mode: serve at the host root.
 
 - Added requirements.txt (Django, gunicorn) — startproject does not generate one.
 - settings.py is untouched CLI output: DEBUG=True and ALLOWED_HOSTS=[] . Set ALLOWED_HOSTS before any real deploy.
+
+## Rule: everything under BASE_PATH
+
+The fleet serves this app behind a proxy at `BASE_PATH=/direct/<agent>:<port>`, and the
+prefix is forwarded **unchanged** — it is NOT stripped before it reaches Django. So every
+route, every redirect, every asset URL and every docs URL the app emits must carry
+`$BASE_PATH`.
+
+Never hard-code a leading-slash path in a template, a view, or a redirect. `href="/about/"`,
+`redirect("/login/")` and `src="/static/app.css"` all point at the proxy's root and 404.
+
+Use Django's own mechanism — it already does this for you here:
+
+- `config/settings.py` sets `FORCE_SCRIPT_NAME` and `STATIC_URL` from `$BASE_PATH`;
+  `config/wsgi.py` moves the prefix out of `PATH_INFO` into `SCRIPT_NAME`.
+- In templates use `{% url 'name' %}` and `{% static 'app.css' %}`; in Python use
+  `reverse()` / `redirect('name')`. All of them emit the prefix automatically.
+- `HEALTH_PATH` in `fleet.conf` stays un-prefixed; the fleet prepends `$BASE_PATH` itself.
