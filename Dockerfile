@@ -4,10 +4,6 @@
 # Deviations from the pack, and why:
 #   - CMD names THIS repo's entrypoint instead of the pack's hardcoded
 #     `uvicorn app.main:app`, which is only correct for a FastAPI repo.
-#
-# BASE_PATH is NOT baked in: it is per-agent and only known at run time, so the
-# image serves at the host root under k8s and the agent's /direct/<id>:<port>
-# run supplies its own prefix.
 
 FROM python:3.12-slim AS build
 WORKDIR /app

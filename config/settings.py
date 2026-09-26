@@ -30,14 +30,6 @@ DEBUG = True
 # time, so ALLOWED_HOSTS has to come from the environment.
 ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",") if h]
 
-# --- fleet BASE_PATH contract -------------------------------------------
-# nginx forwards the whole /direct/<agent>:<port> prefix UNCHANGED, so the app
-# must answer on it. config/wsgi.py moves the prefix from PATH_INFO into
-# SCRIPT_NAME; FORCE_SCRIPT_NAME makes reverse() emit it. Empty => host root.
-_raw = (os.environ.get("BASE_PATH") or "").strip().strip("/")
-BASE_PATH = f"/{_raw}" if _raw else ""
-FORCE_SCRIPT_NAME = BASE_PATH or None
-
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -128,7 +120,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = f"{BASE_PATH}/static/"
+STATIC_URL = 'static/'
 
 
 # Email
